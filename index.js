@@ -2,6 +2,7 @@ require("dotenv").config();
 
 console.log(process.env.BEARER_TOKEN);
 console.log(process.env.USER_ID);
+console.log(process.env.DEVELOPER_KEY);
 
 (async () => {
   const response = await fetch(
@@ -21,5 +22,14 @@ console.log(process.env.USER_ID);
     cost: expense.cost,
     user: expense.users.find((u) => "" + u.user_id === process.env.USER_ID),
   }));
-  console.log(data);
+  // console.log(data);
+
+  const response2 = await fetch("https://api.pocketsmith.com/v2/me", {
+    method: "GET",
+    headers: {
+      "X-Developer-Key": process.env.DEVELOPER_KEY,
+    },
+  });
+  const jsonData2 = await response2.json();
+  console.log(jsonData2);
 })();
