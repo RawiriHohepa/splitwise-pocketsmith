@@ -4,9 +4,14 @@ console.log(process.env.BEARER_TOKEN);
 console.log(process.env.USER_ID);
 console.log(process.env.DEVELOPER_KEY);
 
+const fetchData = async (url, config) => {
+  const response = await fetch(url, config);
+  return await response.json();
+};
+
 (async () => {
-  const response = await fetch(
-    "https://secure.splitwise.com/api/v3.0/get_expenses", //?limit=0",
+  const splitwiseData = await fetchData(
+    "https://secure.splitwise.com/api/v3.0/get_expenses",
     {
       method: "GET",
       headers: {
@@ -14,7 +19,6 @@ console.log(process.env.DEVELOPER_KEY);
       },
     }
   );
-  const jsonData = await response.json();
 
   const data = jsonData.expenses.map((expense) => ({
     id: expense.id,
