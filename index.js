@@ -5,7 +5,7 @@ console.log(process.env.USER_ID);
 
 (async () => {
   const response = await fetch(
-    "https://secure.splitwise.com/api/v3.0/get_expenses",
+    "https://secure.splitwise.com/api/v3.0/get_expenses", //?limit=0",
     {
       method: "GET",
       headers: {
@@ -15,5 +15,11 @@ console.log(process.env.USER_ID);
   );
   const jsonData = await response.json();
 
-  console.log(jsonData);
+  const data = jsonData.expenses.map((expense) => ({
+    id: expense.id,
+    description: expense.description,
+    cost: expense.cost,
+    user: expense.users.find((u) => "" + u.user_id === process.env.USER_ID),
+  }));
+  console.log(data);
 })();
