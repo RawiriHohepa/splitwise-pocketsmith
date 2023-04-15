@@ -1,8 +1,9 @@
 require("dotenv").config();
 
-console.log(process.env.BEARER_TOKEN);
-console.log(process.env.USER_ID);
-console.log(process.env.DEVELOPER_KEY);
+// console.log(process.env.SPLITWISE_BEARER_TOKEN);
+// console.log(process.env.SPLITWISE_USER_ID);
+// console.log(process.env.POCKETSMITH_DEVELOPER_KEY);
+// console.log(process.env.POCKETSMITH_USER_ID);
 
 const fetchData = async (url, config) => {
   const response = await fetch(url, config);
@@ -15,25 +16,28 @@ const fetchData = async (url, config) => {
     {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${process.env.BEARER_TOKEN}`,
+        Authorization: `Bearer ${process.env.SPLITWISE_BEARER_TOKEN}`,
       },
     }
   );
-
-  const data = jsonData.expenses.map((expense) => ({
+  const data = splitwiseData.expenses.map((expense) => ({
     id: expense.id,
     description: expense.description,
     cost: expense.cost,
-    user: expense.users.find((u) => "" + u.user_id === process.env.USER_ID),
+    user: expense.users.find(
+      (u) => "" + u.user_id === process.env.SPLITWISE_USER_ID
+    ),
   }));
   // console.log(data);
 
-  const response2 = await fetch("https://api.pocketsmith.com/v2/me", {
-    method: "GET",
-    headers: {
-      "X-Developer-Key": process.env.DEVELOPER_KEY,
-    },
-  });
-  const jsonData2 = await response2.json();
-  console.log(jsonData2);
+  const pocketsmithData = await fetchData(
+    `https://api.pocketsmith.com/v2/users/${process.env.POCKETSMITH_USER_ID}/transaction_accounts`,
+    {
+      method: "GET",
+      headers: {
+        "X-Developer-Key": process.env.POCKETSMITH_DEVELOPER_KEY,
+      },
+    }
+  );
+  console.log(pocketsmithData);
 })();
