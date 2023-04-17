@@ -29,20 +29,34 @@ const fetchData = async (url, config) => {
     amount: expense.users[1].net_balance,
     date: expense.date.split("T")[0],
     note: "" + expense.id,
+    is_transfer: expense.payment,
   };
   // console.log(pocketsmithTransaction);
 
-  const pocketsmithResponse = await fetchData(
-    `https://api.pocketsmith.com/v2/transaction_accounts/${process.env.POCKETSMITH_TRANSACTION_ACCOUNT_ID}/transactions`,
+  const existingTransaction = await fetchData(
+    `https://api.pocketsmith.com/v2/transaction_accounts/${process.env.POCKETSMITH_TRANSACTION_ACCOUNT_ID}/transactions?search=${expense.id}`,
     {
-      method: "POST",
+      method: "GET",
       headers: {
-        accept: "application/json",
-        "content-type": "application/json",
         "X-Developer-Key": process.env.POCKETSMITH_DEVELOPER_KEY,
       },
-      body: JSON.stringify(pocketsmithTransaction),
     }
   );
-  console.log(pocketsmithResponse);
+  if (!existingTransaction.length) {
+    const pocketsmithResponse = await fetchData(
+      `https://api.pocketsmith.com/v2/transaction_accounts/${process.env.POCKETSMITH_TRANSACTION_ACCOUNT_ID}/transactions`,
+      {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          "content-type": "application/json",
+          "X-Developer-Key": process.env.POCKETSMITH_DEVELOPER_KEY,
+        },
+        body: JSON.stringify(pocketsmithTransaction),
+      }
+    );
+    console.log(pocketsmithResponse);
+  } else {
+    console.log(existingTransaction);
+  }
 })();
