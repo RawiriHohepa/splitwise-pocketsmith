@@ -1,10 +1,5 @@
 require("dotenv").config();
 
-// console.log(process.env.SPLITWISE_BEARER_TOKEN);
-// console.log(process.env.SPLITWISE_USER_ID);
-// console.log(process.env.POCKETSMITH_DEVELOPER_KEY);
-// console.log(process.env.POCKETSMITH_USER_ID);
-
 const fetchData = async (url, config) => {
   const response = await fetch(url, config);
   return await response.json();
@@ -20,24 +15,34 @@ const fetchData = async (url, config) => {
       },
     }
   );
-  const data = splitwiseData.expenses.map((expense) => ({
-    id: expense.id,
-    description: expense.description,
-    cost: expense.cost,
-    user: expense.users.find(
-      (u) => "" + u.user_id === process.env.SPLITWISE_USER_ID
-    ),
-  }));
-  // console.log(data);
+  const myExpenses = splitwiseData.expenses.filter(
+    (expense) =>
+      !!expense.users.find(
+        (u) => "" + u.user_id === process.env.SPLITWISE_USER_ID
+      )
+  );
+  // console.log(myExpenses[1]);
 
-  const pocketsmithData = await fetchData(
-    `https://api.pocketsmith.com/v2/users/${process.env.POCKETSMITH_USER_ID}/transaction_accounts`,
+  const expense = myExpenses[1];
+  const pocketsmithTransaction = {
+    payee: expense.description,
+    amount: expense.users[1].net_balance,
+    date: expense.date.split("T")[0],
+    note: "" + expense.id,
+  };
+  // console.log(pocketsmithTransaction);
+
+  const pocketsmithResponse = await fetchData(
+    `https://api.pocketsmith.com/v2/transaction_accounts/${process.env.POCKETSMITH_TRANSACTION_ACCOUNT_ID}/transactions`,
     {
-      method: "GET",
+      method: "POST",
       headers: {
+        accept: "application/json",
+        "content-type": "application/json",
         "X-Developer-Key": process.env.POCKETSMITH_DEVELOPER_KEY,
       },
+      body: JSON.stringify(pocketsmithTransaction),
     }
   );
-  console.log(pocketsmithData);
+  console.log(pocketsmithResponse);
 })();
