@@ -5,6 +5,24 @@ const fetchData = async (url, config) => {
   return await response.json();
 };
 
+const mapTransaction = (transaction) => {
+  const user = transaction.users.find(
+    (u) => "" + u.user_id === process.env.SPLITWISE_USER_ID
+  );
+
+  // Map splitwise transaction to pocketsmith transaction
+  const pocketsmithTransaction = {
+    payee: `${transaction.description} \[${
+      splitwiseGroupsObject[transaction.group_id]
+    }\]`, // "(expense.group_name)"
+    amount: user.net_balance,
+    date: transaction.date.split("T")[0],
+    note: "" + transaction.id,
+    is_transfer: transaction.payment || user.net_balance > 0,
+  };
+  return pocketsmithTransaction;
+};
+
 (async () => {
   // Get all splitwise transactions
   const splitwiseData = await fetchData(
@@ -17,10 +35,10 @@ const fetchData = async (url, config) => {
     }
   );
   // Filter to just transactions I am involved in
-  const myExpenses = splitwiseData.expenses.filter(
+  const myTransactions = splitwiseData.expenses.filter(
     (expense) =>
       !!expense.users.find(
-        (u) => "" + u.user_id === process.env.SPLITWISE_USER_ID
+        (user) => "" + user.user_id === process.env.SPLITWISE_USER_ID
       )
   );
 
@@ -40,11 +58,11 @@ const fetchData = async (url, config) => {
     splitwiseGroupsObject[group.id] = group.name;
   });
 
-  const expense = myExpenses[0];
+  const transaction = myTransactions[0];
 
   // Check if pocketsmith has an existing transaction for the splitwise transaction
   const existingTransaction = await fetchData(
-    `https://api.pocketsmith.com/v2/transaction_accounts/${process.env.POCKETSMITH_TRANSACTION_ACCOUNT_ID}/transactions?search=${expense.id}`,
+    `https://api.pocketsmith.com/v2/transaction_accounts/${process.env.POCKETSMITH_TRANSACTION_ACCOUNT_ID}/transactions?search=${transaction.id}`,
     {
       method: "GET",
       headers: {
@@ -53,16 +71,7 @@ const fetchData = async (url, config) => {
     }
   );
   if (!existingTransaction.length) {
-    // Map splitwise transaction to pocketsmith transaction
-    const pocketsmithTransaction = {
-      payee: `${expense.description} \[${
-        splitwiseGroupsObject[expense.group_id]
-      }\]`, // "(expense.group_name)"
-      amount: expense.users[1].net_balance,
-      date: expense.date.split("T")[0],
-      note: "" + expense.id,
-      is_transfer: expense.payment,
-    };
+    const pocketsmithTransaction = mapTransaction(transaction);
 
     // Create pocketsmith transaction
     const pocketsmithResponse = await fetchData(
