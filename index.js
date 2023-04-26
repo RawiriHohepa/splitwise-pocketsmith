@@ -72,16 +72,7 @@ const mapTransaction = (transaction, splitwiseGroupsObject) => {
     splitwiseGroupsObject[group.id] = group.name;
   });
 
-  const transactions = [
-    myTransactions[0],
-    myTransactions[1],
-    myTransactions[2],
-    myTransactions[3],
-    myTransactions[4],
-    myTransactions[5],
-  ];
-
-  transactions.forEach(async (transaction) => {
+  myTransactions.forEach(async (transaction) => {
     // Check if pocketsmith has an existing transaction for the splitwise transaction
     const existingTransaction = await fetchData(
       `https://api.pocketsmith.com/v2/transaction_accounts/${process.env.POCKETSMITH_TRANSACTION_ACCOUNT_ID}/transactions?search=${transaction.id}`,
@@ -111,10 +102,7 @@ const mapTransaction = (transaction, splitwiseGroupsObject) => {
           body: JSON.stringify(pocketsmithTransaction),
         }
       );
-      console.log(pocketsmithResponse);
-    } else {
-      // Pocketsmith transaction already exists, do nothing
-      console.log(existingTransaction);
     }
+    // Pocketsmith transaction already exists, do nothing
   });
 })();
