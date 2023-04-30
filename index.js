@@ -1,5 +1,23 @@
 require("dotenv").config();
 
+const envKeys = [
+  "SPLITWISE_BEARER_TOKEN",
+  "SPLITWISE_USER_ID",
+  "POCKETSMITH_DEVELOPER_KEY",
+  "POCKETSMITH_USER_ID",
+  "POCKETSMITH_TRANSACTION_ACCOUNT_ID",
+];
+let envKeyMissing = false;
+envKeys.forEach((envKey) => {
+  if (!process.env[envKey]) {
+    console.log(`ERROR: missing .env key ${envKey}`);
+    envKeyMissing = true;
+  }
+});
+if (envKeyMissing) {
+  return;
+}
+
 const fetchData = async (url, config) => {
   const response = await fetch(url, config);
   return await response.json();
