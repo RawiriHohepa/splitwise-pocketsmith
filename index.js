@@ -44,13 +44,18 @@ const mapTransaction = (transaction, splitwiseGroupsObject) => {
     }\]`;
   }
 
+  const is_transfer = transaction.payment || net_balance > 0;
+
   // Map splitwise transaction to pocketsmith transaction
   const pocketsmithTransaction = {
     payee,
     amount: net_balance,
     date: transaction.date.split("T")[0],
     note: "" + transaction.id,
-    is_transfer: transaction.payment || net_balance > 0,
+    is_transfer,
+    category_id: is_transfer
+      ? process.env.POCKETSMITH_TRANSFER_CATEGORY_ID
+      : undefined,
   };
   return pocketsmithTransaction;
 };
