@@ -71,7 +71,7 @@ const mapTransaction = (transaction, splitwiseGroupsObject) => {
     (expense) =>
       !!expense.users.find(
         (user) => "" + user.user_id === process.env.SPLITWISE_USER_ID
-      )
+      ) && expense.deleted_at === null
   );
 
   // Get all splitwise groups
