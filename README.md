@@ -2,12 +2,6 @@
 
 A small script to pull Splitwise transactions and import them into Pocketsmith
 
-## TODO
-
-- [x] Add instructions to set up .env file
-- [x] Automatically add transfers to user's Transfers category (if specified)
-- [x] Add error messages for missing .env values
-
 ## Setup and run
 
 1. Create and setup `.env` file (see below)
